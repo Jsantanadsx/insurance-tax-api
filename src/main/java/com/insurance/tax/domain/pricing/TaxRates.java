@@ -4,6 +4,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
+/**
+ * Representa as taxas utilizadas no cálculo do preço tarifado.
+ *
+ * As taxas de IOF, PIS e COFINS ficam agrupadas neste objeto
+ * para facilitar o uso durante o cálculo.
+ *
+ * A fórmula de cálculo também fica centralizada aqui para evitar
+ * repetir a mesma lógica em cada categoria de seguro.
+ *
+ * BigDecimal é utilizado porque estamos trabalhando com valores
+ * monetários e precisamos evitar problemas de precisão.
+ */
+
 public record TaxRates(
         BigDecimal iof,
         BigDecimal pis,

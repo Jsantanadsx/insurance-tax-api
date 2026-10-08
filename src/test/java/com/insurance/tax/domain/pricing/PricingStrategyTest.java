@@ -11,6 +11,13 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Testa o cálculo realizado para cada categoria de seguro.
+ *
+ * O objetivo é garantir que cada categoria utilize as taxas
+ * definidas no desafio e produza o preço tarifado esperado.
+ */
+
 class PricingStrategyTest {
 
     @ParameterizedTest

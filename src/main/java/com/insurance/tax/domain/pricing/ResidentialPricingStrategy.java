@@ -4,6 +4,13 @@ import com.insurance.tax.domain.model.InsuranceCategory;
 
 import java.math.BigDecimal;
 
+/**
+ * Define as taxas utilizadas para seguros da categoria RESIDENCIAL.
+ *
+ * Taxas definidas no desafio:
+ * IOF de 4%, PIS de 0% e COFINS de 3%.
+ */
+
 public final class ResidentialPricingStrategy
         implements PricingStrategy{
 

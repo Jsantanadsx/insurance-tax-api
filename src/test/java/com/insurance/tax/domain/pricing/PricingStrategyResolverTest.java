@@ -7,13 +7,21 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PricingStrategyFactoryTest {
+/**
+ * Testa a escolha da estratégia de cálculo de acordo
+ * com a categoria do seguro.
+ *
+ * Também são testadas situações inválidas, como estratégias
+ * duplicadas ou categorias sem uma estratégia disponível.
+ */
+
+class PricingStrategyResolverTest {
 
     @Test
     void shouldReturnCorrectStrategyForCategory() {
 
-        PricingStrategyFactory factory =
-                new PricingStrategyFactory(
+        PricingStrategyResolver factory =
+                new PricingStrategyResolver(
                         List.of(
                                 new LifePricingStrategy(),
                                 new AutoPricingStrategy(),
@@ -35,8 +43,8 @@ class PricingStrategyFactoryTest {
     @Test
     void shouldReturnCorrectStrategyForAllCategories() {
 
-        PricingStrategyFactory factory =
-                new PricingStrategyFactory(
+        PricingStrategyResolver factory =
+                new PricingStrategyResolver(
                         List.of(
                                 new LifePricingStrategy(),
                                 new AutoPricingStrategy(),
@@ -75,8 +83,8 @@ class PricingStrategyFactoryTest {
     @Test
     void shouldRejectNullCategory() {
 
-        PricingStrategyFactory factory =
-                new PricingStrategyFactory(
+        PricingStrategyResolver factory =
+                new PricingStrategyResolver(
                         List.of(
                                 new LifePricingStrategy()
                         )
@@ -93,7 +101,7 @@ class PricingStrategyFactoryTest {
 
         assertThrows(
                 NullPointerException.class,
-                () -> new PricingStrategyFactory(null)
+                () -> new PricingStrategyResolver(null)
         );
     }
 
@@ -102,7 +110,7 @@ class PricingStrategyFactoryTest {
 
         assertThrows(
                 IllegalStateException.class,
-                () -> new PricingStrategyFactory(
+                () -> new PricingStrategyResolver(
                         List.of(
                                 new LifePricingStrategy(),
                                 new LifePricingStrategy()
@@ -114,8 +122,8 @@ class PricingStrategyFactoryTest {
     @Test
     void shouldRejectCategoryWithoutRegisteredStrategy() {
 
-        PricingStrategyFactory factory =
-                new PricingStrategyFactory(
+        PricingStrategyResolver factory =
+                new PricingStrategyResolver(
                         List.of(
                                 new LifePricingStrategy()
                         )

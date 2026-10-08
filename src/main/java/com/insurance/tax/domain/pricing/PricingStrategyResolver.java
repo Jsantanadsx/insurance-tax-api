@@ -10,11 +10,22 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-public final class PricingStrategyFactory {
+/**
+ * Responsável por encontrar a estratégia de cálculo correta
+ * para cada categoria de seguro.
+ *
+ * Ao receber uma categoria, como VIDA ou AUTO, procura a
+ * estratégia responsável por calcular aquele tipo de seguro.
+ *
+ * Isso permite que as outras partes da aplicação não precisem
+ * conhecer diretamente cada implementação de cálculo.
+ */
+
+public final class PricingStrategyResolver {
 
     private final Map<InsuranceCategory, PricingStrategy> strategies;
 
-    public PricingStrategyFactory(
+    public PricingStrategyResolver(
             Collection<PricingStrategy> strategies
     ) {
 

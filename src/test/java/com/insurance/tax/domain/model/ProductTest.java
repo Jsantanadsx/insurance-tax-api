@@ -7,6 +7,13 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testa as regras necessárias para criar um produto válido.
+ *
+ * São verificadas situações como nome vazio, categoria ausente
+ * e preços inválidos.
+ */
+
 class ProductTest {
 
     @Test

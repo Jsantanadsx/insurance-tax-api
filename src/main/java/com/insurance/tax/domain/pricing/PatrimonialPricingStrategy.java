@@ -4,6 +4,13 @@ import com.insurance.tax.domain.model.InsuranceCategory;
 
 import java.math.BigDecimal;
 
+/**
+ * Define as taxas utilizadas para seguros da categoria PATRIMONIAL.
+ *
+ * Taxas definidas no desafio:
+ * IOF de 5%, PIS de 3% e COFINS de 0%.
+ */
+
 public final class PatrimonialPricingStrategy
         implements PricingStrategy {
 

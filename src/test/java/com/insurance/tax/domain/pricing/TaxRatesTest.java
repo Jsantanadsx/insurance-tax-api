@@ -6,6 +6,13 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testes das regras de cálculo das taxas.
+ *
+ * São verificados tanto os cálculos esperados quanto situações
+ * inválidas, como preço zero, preço negativo ou taxas inválidas.
+ */
+
 class TaxRatesTest {
 
     @Test

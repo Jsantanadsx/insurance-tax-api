@@ -4,6 +4,13 @@ import com.insurance.tax.domain.model.InsuranceCategory;
 
 import java.math.BigDecimal;
 
+/**
+ * Define as taxas utilizadas para seguros da categoria VIAGEM.
+ *
+ * Taxas definidas no desafio:
+ * IOF de 2%, PIS de 4% e COFINS de 1%.
+ */
+
 public final class TravelPricingStrategy
         implements PricingStrategy {
 

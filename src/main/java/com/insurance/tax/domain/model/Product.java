@@ -4,6 +4,17 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Representa um produto de seguro dentro da aplicação.
+ *
+ * O produto possui somente as informações solicitadas no desafio:
+ * identificador, nome, categoria, preço base e preço tarifado.
+ *
+ * Algumas validações são feitas na própria criação do produto
+ * para evitar que um produto inválido continue sendo utilizado
+ * pelas outras partes da aplicação.
+ */
+
 public record Product (
         UUID id,
         String name,

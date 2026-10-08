@@ -4,6 +4,13 @@ import com.insurance.tax.domain.model.InsuranceCategory;
 
 import java.math.BigDecimal;
 
+/**
+ * Define as taxas utilizadas para seguros da categoria VIDA.
+ *
+ * Taxas definidas no desafio:
+ * IOF de 1%, PIS de 2,2% e COFINS de 0%.
+ */
+
 public final class LifePricingStrategy
         implements PricingStrategy {
 
