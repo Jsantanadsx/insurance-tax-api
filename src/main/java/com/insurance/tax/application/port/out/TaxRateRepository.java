@@ -5,14 +5,16 @@ import com.insurance.tax.domain.pricing.TaxRateVersion;
 import com.insurance.tax.domain.pricing.TaxType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Define as operacoes de acesso às taxas necessárias
- * para a regra de negócio.
+ * Define as operacoes de acesso as taxas necessarias
+ * para a regra de negocio.
  *
- * A aplicação conhece apenas este contrato e não precisa
- * saber se os dados estão em H2, PostgreSQL ou outro banco.
+ * <p>A aplicacao conhece apenas este contrato e nao precisa
+ * saber qual tecnologia esta sendo utilizada para armazenar
+ * os dados.</p>
  */
 public interface TaxRateRepository {
 
@@ -22,5 +24,11 @@ public interface TaxRateRepository {
             LocalDateTime referenceDate
     );
 
-    TaxRateVersion save(TaxRateVersion taxRateVersion);
+    List<TaxRateVersion> findApplicableRates(
+            LocalDateTime referenceDate
+    );
+
+    TaxRateVersion save(
+            TaxRateVersion taxRateVersion
+    );
 }

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -79,5 +80,67 @@ class InsuranceTaxRateJpaRepositoryTest {
                         );
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldReturnOnlyApplicableRatesAtReferenceDate() {
+
+        InsuranceTaxRateEntity futureRate =
+                new InsuranceTaxRateEntity(
+                        UUID.randomUUID(),
+                        InsuranceCategory.VIDA,
+                        TaxType.IOF,
+                        new BigDecimal("0.020000"),
+                        LocalDateTime.of(2027, 1, 1, 0, 0),
+                        "admin",
+                        LocalDateTime.of(2026, 12, 20, 10, 0)
+                );
+
+        repository.saveAndFlush(futureRate);
+
+        List<InsuranceTaxRateEntity> ratesIn2026 =
+                repository.findApplicableRates(
+                        LocalDateTime.of(2026, 6, 1, 0, 0)
+                );
+
+        List<InsuranceTaxRateEntity> ratesIn2027 =
+                repository.findApplicableRates(
+                        LocalDateTime.of(2027, 6, 1, 0, 0)
+                );
+
+        assertEquals(15, ratesIn2026.size());
+        assertEquals(15, ratesIn2027.size());
+
+        InsuranceTaxRateEntity vidaIof2026 =
+                ratesIn2026.stream()
+                        .filter(rate ->
+                                rate.getInsuranceCategory()
+                                        == InsuranceCategory.VIDA
+                                        && rate.getTaxType()
+                                        == TaxType.IOF
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        InsuranceTaxRateEntity vidaIof2027 =
+                ratesIn2027.stream()
+                        .filter(rate ->
+                                rate.getInsuranceCategory()
+                                        == InsuranceCategory.VIDA
+                                        && rate.getTaxType()
+                                        == TaxType.IOF
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertEquals(
+                new BigDecimal("0.010000"),
+                vidaIof2026.getRate()
+        );
+
+        assertEquals(
+                new BigDecimal("0.020000"),
+                vidaIof2027.getRate()
+        );
     }
 }

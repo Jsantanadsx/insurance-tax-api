@@ -8,6 +8,7 @@ import com.insurance.tax.infrastructure.persistence.mapper.InsuranceTaxRateMappe
 import com.insurance.tax.infrastructure.persistence.repository.InsuranceTaxRateJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -51,5 +52,16 @@ public class TaxRateRepositoryAdapter implements TaxRateRepository {
                 jpaRepository.save(entity);
 
         return InsuranceTaxRateMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public List<TaxRateVersion> findApplicableRates(
+            LocalDateTime referenceDate
+    ) {
+        return jpaRepository
+                .findApplicableRates(referenceDate)
+                .stream()
+                .map(InsuranceTaxRateMapper::toDomain)
+                .toList();
     }
 }
