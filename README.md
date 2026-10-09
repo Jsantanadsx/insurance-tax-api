@@ -1,8 +1,8 @@
 # Insurance Tax API
 
-API REST desenvolvida em Java com Spring Boot para cadastro e atualização de produtos de seguro com cálculo automático do preço tarifado a partir das taxas de IOF, PIS e COFINS aplicáveis a cada categoria.
+API REST desenvolvida em Java com Spring Boot para cadastro, listagem e atualização de produtos de seguro com cálculo automático do preço tarifado a partir das taxas de IOF, PIS e COFINS aplicáveis a cada categoria.
 
-A aplicação mantém as taxas em banco de dados, calcula o valor tarifado no backend e persiste os produtos utilizando H2, Spring Data JPA e Flyway.
+A aplicação mantém as taxas em banco de dados, calcula o valor tarifado no backend, persiste os produtos utilizando H2, Spring Data JPA e Flyway e disponibiliza um painel web integrado para utilização da API.
 
 ---
 
@@ -36,8 +36,13 @@ O cliente não define o `preco_tarifado`. Esse valor é sempre calculado pelo ba
 - MockMvc
 - JaCoCo
 - Spring Boot Actuator
+- Micrometer Tracing
+- Brave
 - OpenAPI
 - Swagger UI
+- HTML5
+- CSS3
+- JavaScript
 
 ---
 
@@ -117,6 +122,8 @@ Preço tarifado = 103,20
 ```
 
 Os valores monetários são calculados utilizando `BigDecimal`, evitando problemas de precisão com valores financeiros.
+
+A regra de cálculo fica centralizada no `PricingCalculator`, mantendo uma única fonte de verdade para a tarifação.
 
 ---
 
@@ -198,27 +205,60 @@ com.insurance.tax
     └── exception
 ```
 
+Recursos estáticos do painel:
+
+```text
+src/main/resources/static
+├── index.html
+├── css
+│   └── styles.css
+└── js
+    └── app.js
+```
+
 ### Fluxo principal
 
 ```text
-Cliente HTTP
-     ↓
-Controller
-     ↓
-Service
-     ↓
-Regra de domínio
-     ↓
-Repository Port
-     ↓
-Repository Adapter
-     ↓
-Spring Data JPA
-     ↓
-H2
+Cliente HTTP / Painel Web
+          ↓
+       Controller
+          ↓
+        Service
+          ↓
+    Regra de domínio
+          ↓
+   Repository Port
+          ↓
+ Repository Adapter
+          ↓
+ Spring Data JPA
+          ↓
+          H2
 ```
 
 Essa organização mantém as regras de negócio desacopladas da camada de persistência e da interface HTTP.
+
+---
+
+# Painel Web
+
+A aplicação possui uma interface web integrada ao próprio Spring Boot.
+
+Com a aplicação em execução:
+
+```text
+http://localhost:8080/
+```
+
+O painel permite:
+
+- listar produtos cadastrados;
+- cadastrar novos produtos;
+- editar produtos existentes;
+- visualizar preço base e preço tarifado;
+- acessar diretamente o Swagger UI.
+
+O frontend não calcula o preço tarifado. Ele envia apenas os dados permitidos pela API e exibe o valor calculado pelo backend.
 
 ---
 
@@ -228,6 +268,44 @@ Base URL:
 
 ```text
 http://localhost:8080/api/produtos
+```
+
+---
+
+## Listar produtos
+
+### Endpoint
+
+```http
+GET /api/produtos
+```
+
+### Response
+
+Status:
+
+```text
+200 OK
+```
+
+Exemplo:
+
+```json
+[
+  {
+    "id": "133c5d82-56fb-4b2c-ab52-67de6bafac45",
+    "nome": "Seguro de Vida Individual",
+    "categoria": "VIDA",
+    "preco_base": 100.00,
+    "preco_tarifado": 103.20
+  }
+]
+```
+
+Quando não existem produtos cadastrados, a API retorna:
+
+```json
+[]
 ```
 
 ---
@@ -627,6 +705,7 @@ http://localhost:8080/v3/api-docs
 O Swagger permite visualizar e executar diretamente os endpoints disponíveis:
 
 ```text
+GET  /api/produtos
 POST /api/produtos
 PUT  /api/produtos/{id}
 GET  /api/admin/taxas
@@ -681,12 +760,27 @@ No Windows PowerShell ou Prompt de Comando:
 Após inicializar:
 
 ```text
-http://localhost:8080
+Painel Web:
+http://localhost:8080/
+
+Swagger UI:
+http://localhost:8080/swagger-ui/index.html
+
+API de Produtos:
+http://localhost:8080/api/produtos
 ```
 
 ---
 
 # Exemplos com curl
+
+## Listar produtos
+
+```bash
+curl "http://localhost:8080/api/produtos"
+```
+
+---
 
 ## Criar produto
 
@@ -728,16 +822,16 @@ curl "http://localhost:8080/api/admin/taxas"
 
 # Testes
 
-Para executar toda a suíte:
+Para executar toda a suíte e validar também o quality gate:
 
 ```bash
-./mvnw clean test
+./mvnw clean verify
 ```
 
-Estado atual da aplicação:
+Estado atual:
 
 ```text
-Tests run: 77
+Tests run: 82
 Failures: 0
 Errors: 0
 Skipped: 0
@@ -756,7 +850,8 @@ A suíte contém testes de:
 - validação HTTP;
 - persistência;
 - integração com Spring;
-- integração com H2 e Flyway.
+- integração com H2 e Flyway;
+- criação, atualização e listagem de produtos.
 
 ---
 
@@ -764,10 +859,19 @@ A suíte contém testes de:
 
 O projeto utiliza JaCoCo.
 
+Cobertura atual:
+
+| Métrica | Cobertura |
+|---|---:|
+| Instructions | 99,35% |
+| Branches | 95,45% |
+| Lines | 99,26% |
+| Methods | 98,25% |
+
 Após executar:
 
 ```bash
-./mvnw clean test
+./mvnw clean verify
 ```
 
 o relatório HTML pode ser consultado em:
@@ -775,6 +879,17 @@ o relatório HTML pode ser consultado em:
 ```text
 target/site/jacoco/index.html
 ```
+
+## Quality Gate
+
+O build possui um quality gate de cobertura configurado com os seguintes limites mínimos:
+
+```text
+Linhas   >= 90%
+Branches >= 80%
+```
+
+Caso a cobertura fique abaixo desses limites, a fase `verify` falha.
 
 ---
 
@@ -804,6 +919,12 @@ Controllers não realizam cálculo ou persistência diretamente.
 
 A camada HTTP apenas recebe requests, valida os dados e delega o processamento para a camada de aplicação.
 
+## Regra de cálculo centralizada
+
+O cálculo da tarifação fica concentrado no `PricingCalculator`.
+
+O objeto `TaxRates` representa e valida as alíquotas, sem duplicar a implementação da fórmula.
+
 ## Preço tarifado controlado pelo backend
 
 O cliente não possui controle sobre o valor de `preco_tarifado`.
@@ -816,6 +937,8 @@ preco_base
 taxas vigentes
 ```
 
+O painel web segue a mesma regra e não executa cálculo tributário no JavaScript.
+
 ---
 
 # Estado atual
@@ -824,8 +947,10 @@ Atualmente a aplicação possui:
 
 ```text
 [OK] Cadastro de produtos
+[OK] Listagem de produtos
 [OK] Atualização de produtos
 [OK] Cálculo automático do preço tarifado
+[OK] Painel web integrado
 [OK] Persistência H2
 [OK] Taxas dinâmicas persistidas
 [OK] Versionamento de taxas por vigência
@@ -842,6 +967,7 @@ Atualmente a aplicação possui:
 [OK] Testes unitários
 [OK] Testes de integração
 [OK] JaCoCo
+[OK] Quality Gate de cobertura
 ```
 
 ---
@@ -850,7 +976,6 @@ Atualmente a aplicação possui:
 
 Como evolução da solução, podem ser adicionados:
 
-- interface web para utilização da API;
 - gerenciamento administrativo de novas taxas;
 - autenticação e autorização;
 - banco de dados externo para ambientes de produção;
