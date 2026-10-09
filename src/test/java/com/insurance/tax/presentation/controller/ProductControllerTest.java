@@ -200,4 +200,38 @@ class ProductControllerTest {
                         new BigDecimal("100.00")
                 );
     }
+
+    @Test
+    void shouldReturnBadRequestWhenProductDataIsInvalid()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/produtos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {
+                                      "nome": "",
+                                      "categoria": null,
+                                      "preco_base": -100.00
+                                    }
+                                    """)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                )
+                .andExpect(
+                        jsonPath("$.nome")
+                                .value("nome é obrigatório")
+                )
+                .andExpect(
+                        jsonPath("$.categoria")
+                                .value("categoria é obrigatória")
+                )
+                .andExpect(
+                        jsonPath("$.preco_base")
+                                .value("preco_base deve ser maior que zero")
+                );
+
+        verifyNoInteractions(productService);
+    }
 }

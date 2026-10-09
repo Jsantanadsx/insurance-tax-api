@@ -7,6 +7,7 @@ import com.insurance.tax.presentation.dto.response.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductResponse criarProduto(
-            @RequestBody ProductRequest request
+            @Valid @RequestBody ProductRequest request
     ) {
 
         Product product =
@@ -36,7 +37,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ProductResponse atualizarProduto(
             @PathVariable UUID id,
-            @RequestBody ProductRequest request
+            @Valid @RequestBody ProductRequest request
     ) {
 
         Product product =
