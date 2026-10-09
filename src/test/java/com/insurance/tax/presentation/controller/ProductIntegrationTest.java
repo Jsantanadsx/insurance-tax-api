@@ -9,6 +9,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.insurance.tax.domain.model.InsuranceCategory;
+import com.insurance.tax.infrastructure.persistence.entity.ProductEntity;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -133,6 +140,95 @@ class ProductIntegrationTest {
                         .compareTo(
                                 new java.math.BigDecimal("999999.99")
                         ) != 0
+        );
+    }
+
+    @Test
+    void shouldUpdateExistingProductWithoutCreatingAnotherRecord()
+            throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        ProductEntity existingProduct =
+                new ProductEntity(
+                        id,
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        productRepository.saveAndFlush(existingProduct);
+
+        assertEquals(
+                1,
+                productRepository.count()
+        );
+
+        mockMvc.perform(
+                        put("/api/produtos/{id}", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {
+                                      "nome": "Seguro de Vida Premium",
+                                      "categoria": "VIDA",
+                                      "preco_base": 200.00,
+                                      "preco_tarifado": 999999.99
+                                    }
+                                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(id.toString())
+                )
+                .andExpect(
+                        jsonPath("$.nome")
+                                .value("Seguro de Vida Premium")
+                )
+                .andExpect(
+                        jsonPath("$.preco_base")
+                                .value(200.00)
+                )
+                .andExpect(
+                        jsonPath("$.preco_tarifado")
+                                .value(206.40)
+                );
+
+        assertEquals(
+                1,
+                productRepository.count()
+        );
+
+        ProductEntity updatedProduct =
+                productRepository
+                        .findById(id)
+                        .orElseThrow();
+
+        assertEquals(
+                id,
+                updatedProduct.getId()
+        );
+
+        assertEquals(
+                "Seguro de Vida Premium",
+                updatedProduct.getName()
+        );
+
+        assertEquals(
+                0,
+                updatedProduct.getBasePrice()
+                        .compareTo(
+                                new BigDecimal("200.00")
+                        )
+        );
+
+        assertEquals(
+                0,
+                updatedProduct.getTariffedPrice()
+                        .compareTo(
+                                new BigDecimal("206.40")
+                        )
         );
     }
 }
