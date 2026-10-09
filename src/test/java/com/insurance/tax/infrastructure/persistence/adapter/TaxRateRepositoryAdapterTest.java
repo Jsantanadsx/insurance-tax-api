@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -153,5 +154,71 @@ class TaxRateRepositoryAdapterTest {
 
         verify(jpaRepository)
                 .save(any(InsuranceTaxRateEntity.class));
+    }
+
+    @Test
+    void shouldFindApplicableRates() {
+
+        LocalDateTime referenceDate =
+                LocalDateTime.of(2026, 6, 1, 0, 0);
+
+        InsuranceTaxRateEntity vidaIof =
+                new InsuranceTaxRateEntity(
+                        UUID.randomUUID(),
+                        InsuranceCategory.VIDA,
+                        TaxType.IOF,
+                        new BigDecimal("0.010000"),
+                        LocalDateTime.of(2026, 1, 1, 0, 0),
+                        "SYSTEM",
+                        LocalDateTime.of(2026, 1, 1, 10, 0)
+                );
+
+        InsuranceTaxRateEntity autoIof =
+                new InsuranceTaxRateEntity(
+                        UUID.randomUUID(),
+                        InsuranceCategory.AUTO,
+                        TaxType.IOF,
+                        new BigDecimal("0.055000"),
+                        LocalDateTime.of(2026, 1, 1, 0, 0),
+                        "SYSTEM",
+                        LocalDateTime.of(2026, 1, 1, 10, 0)
+                );
+
+        when(
+                jpaRepository.findApplicableRates(referenceDate)
+        ).thenReturn(
+                List.of(
+                        vidaIof,
+                        autoIof
+                )
+        );
+
+        List<TaxRateVersion> result =
+                adapter.findApplicableRates(referenceDate);
+
+        assertEquals(2, result.size());
+
+        assertEquals(
+                InsuranceCategory.VIDA,
+                result.get(0).insuranceCategory()
+        );
+
+        assertEquals(
+                new BigDecimal("0.010000"),
+                result.get(0).rate()
+        );
+
+        assertEquals(
+                InsuranceCategory.AUTO,
+                result.get(1).insuranceCategory()
+        );
+
+        assertEquals(
+                new BigDecimal("0.055000"),
+                result.get(1).rate()
+        );
+
+        verify(jpaRepository)
+                .findApplicableRates(referenceDate);
     }
 }
