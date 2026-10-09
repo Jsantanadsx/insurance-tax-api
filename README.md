@@ -36,6 +36,8 @@ O cliente não define o `preco_tarifado`. Esse valor é sempre calculado pelo ba
 - MockMvc
 - JaCoCo
 - Spring Boot Actuator
+- OpenAPI
+- Swagger UI
 
 ---
 
@@ -115,6 +117,52 @@ Preço tarifado = 103,20
 ```
 
 Os valores monetários são calculados utilizando `BigDecimal`, evitando problemas de precisão com valores financeiros.
+
+---
+
+## Premissas e decisões adotadas
+
+### Valor do exemplo de Seguro de Vida
+
+O material do desafio apresenta, em um dos exemplos de resposta, o valor `106.00` para um Seguro de Vida com preço base de `100.00`.
+
+Entretanto, a tabela de impostos, a fórmula apresentada e o exemplo detalhado do próprio desafio determinam:
+
+```text
+Preço base = 100,00
+
+IOF    = 1,00%
+PIS    = 2,20%
+COFINS = 0,00%
+
+100,00 + 1,00 + 2,20 = 103,20
+```
+
+Por esse motivo, a implementação considera `103.20` como o valor correto para esse cenário, seguindo as alíquotas e a fórmula definidas no desafio.
+
+### Persistência das taxas
+
+O desafio informa que não é obrigatório parametrizar ou persistir as taxas de impostos.
+
+Nesta solução foi adotada, propositalmente, a persistência das taxas com controle de vigência.
+
+Essa decisão permite:
+
+- separar as regras tributárias da lógica de cálculo;
+- alterar taxas sem modificar o código;
+- manter histórico de versões;
+- consultar quais taxas eram válidas em determinada data;
+- aumentar a extensibilidade da solução.
+
+Essa estrutura adicional não altera os campos persistidos do produto, que continuam sendo somente:
+
+```text
+id
+nome
+categoria
+preco_base
+preco_tarifado
+```
 
 ---
 
@@ -526,6 +574,41 @@ Exemplo:
 http://localhost:8080/actuator/health
 ```
 
+Nesta etapa, a solução já expõe métricas e informações de saúde por meio do Actuator. Logs de negócio e tracing distribuído são considerados evoluções adicionais de observabilidade.
+
+---
+
+# OpenAPI / Swagger
+
+A API possui documentação interativa utilizando OpenAPI e Swagger UI.
+
+Com a aplicação em execução:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+A especificação OpenAPI em formato JSON pode ser consultada em:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+O Swagger permite visualizar e executar diretamente os endpoints disponíveis:
+
+```text
+POST /api/produtos
+PUT  /api/produtos/{id}
+GET  /api/admin/taxas
+```
+
+A documentação da API utiliza:
+
+```text
+Insurance Tax API
+Version 1.0.0
+```
+
 ---
 
 # Como executar
@@ -722,6 +805,8 @@ Atualmente a aplicação possui:
 [OK] HTTP 400 para dados inválidos
 [OK] HTTP 404 para produto inexistente
 [OK] Actuator
+[OK] OpenAPI
+[OK] Swagger UI
 [OK] Testes unitários
 [OK] Testes de integração
 [OK] JaCoCo
@@ -729,13 +814,13 @@ Atualmente a aplicação possui:
 
 ---
 
-# Possíveis Próximas evoluções
+# Possíveis próximas evoluções
 
 Como evolução da solução, podem ser adicionados:
 
-- documentação interativa OpenAPI / Swagger;
 - interface web para utilização da API;
 - gerenciamento administrativo de novas taxas;
+- logs de negócio e tracing distribuído;
 - autenticação e autorização;
 - banco de dados externo para ambientes de produção;
 - containerização;
