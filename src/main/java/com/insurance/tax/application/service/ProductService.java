@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -123,5 +124,20 @@ public class ProductService {
         );
 
         return savedProduct;
+    }
+
+    public List<Product> listProducts() {
+
+        log.debug("Listando produtos de seguro");
+
+        List<Product> products =
+                productRepository.findAll();
+
+        log.debug(
+                "Produtos de seguro encontrados. total={}",
+                products.size()
+        );
+
+        return products;
     }
 }
