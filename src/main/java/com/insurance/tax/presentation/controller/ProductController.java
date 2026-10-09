@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/produtos")
 @RequiredArgsConstructor
@@ -23,6 +25,23 @@ public class ProductController {
 
         Product product =
                 productService.createProduct(
+                        request.nome(),
+                        request.categoria(),
+                        request.precoBase()
+                );
+
+        return ProductResponse.from(product);
+    }
+
+    @PutMapping("/{id}")
+    public ProductResponse atualizarProduto(
+            @PathVariable UUID id,
+            @RequestBody ProductRequest request
+    ) {
+
+        Product product =
+                productService.updateProduct(
+                        id,
                         request.nome(),
                         request.categoria(),
                         request.precoBase()

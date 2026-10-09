@@ -1,5 +1,6 @@
 package com.insurance.tax.application.service;
 
+import com.insurance.tax.application.exception.ProductNotFoundException;
 import com.insurance.tax.application.port.out.ProductRepository;
 import com.insurance.tax.domain.model.InsuranceCategory;
 import com.insurance.tax.domain.model.Product;
@@ -11,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -133,5 +136,120 @@ class ProductServiceTest {
                 new BigDecimal("55.25"),
                 savedProduct.tariffedPrice()
         );
+    }
+
+    @Test
+    void shouldUpdateExistingProductAndRecalculatePrice() {
+
+        UUID id = UUID.randomUUID();
+
+        Product existingProduct =
+                new Product(
+                        id,
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        when(
+                productRepository.findById(id)
+        ).thenReturn(
+                Optional.of(existingProduct)
+        );
+
+        when(
+                insurancePricingService.calculatePrice(
+                        eq(InsuranceCategory.VIDA),
+                        eq(new BigDecimal("200.00")),
+                        any()
+                )
+        ).thenReturn(
+                new BigDecimal("206.40")
+        );
+
+        when(
+                productRepository.save(any(Product.class))
+        ).thenAnswer(
+                invocation -> invocation.getArgument(0)
+        );
+
+        Product result =
+                productService.updateProduct(
+                        id,
+                        "Seguro de Vida Premium",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("200.00")
+                );
+
+        assertEquals(
+                id,
+                result.id()
+        );
+
+        assertEquals(
+                "Seguro de Vida Premium",
+                result.name()
+        );
+
+        assertEquals(
+                InsuranceCategory.VIDA,
+                result.category()
+        );
+
+        assertEquals(
+                new BigDecimal("200.00"),
+                result.basePrice()
+        );
+
+        assertEquals(
+                new BigDecimal("206.40"),
+                result.tariffedPrice()
+        );
+
+        verify(productRepository)
+                .findById(id);
+
+        verify(insurancePricingService)
+                .calculatePrice(
+                        eq(InsuranceCategory.VIDA),
+                        eq(new BigDecimal("200.00")),
+                        any()
+                );
+
+        verify(productRepository)
+                .save(any(Product.class));
+    }
+
+    @Test
+    void shouldRejectUpdateWhenProductDoesNotExist() {
+
+        UUID id = UUID.randomUUID();
+
+        when(
+                productRepository.findById(id)
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> productService.updateProduct(
+                        id,
+                        "Seguro inexistente",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00")
+                )
+        );
+
+        verify(productRepository)
+                .findById(id);
+
+        verifyNoInteractions(
+                insurancePricingService
+        );
+
+        verify(productRepository, never())
+                .save(any(Product.class));
     }
 }
