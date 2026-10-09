@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import com.insurance.tax.domain.model.InsuranceCategory;
 import com.insurance.tax.infrastructure.persistence.entity.ProductEntity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -230,5 +231,62 @@ class ProductIntegrationTest {
                                 new BigDecimal("206.40")
                         )
         );
+    }
+
+    @Test
+    void shouldListPersistedProducts()
+            throws Exception {
+
+        ProductEntity firstProduct =
+                new ProductEntity(
+                        UUID.randomUUID(),
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        ProductEntity secondProduct =
+                new ProductEntity(
+                        UUID.randomUUID(),
+                        "Seguro Auto",
+                        InsuranceCategory.AUTO,
+                        new BigDecimal("50.00"),
+                        new BigDecimal("55.25")
+                );
+
+        productRepository.saveAndFlush(firstProduct);
+        productRepository.saveAndFlush(secondProduct);
+
+        mockMvc.perform(
+                        get("/api/produtos")
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.length()")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[0].id")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$[0].nome")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$[0].categoria")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$[0].preco_base")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$[0].preco_tarifado")
+                                .exists()
+                );
     }
 }

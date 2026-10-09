@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
@@ -251,5 +252,61 @@ class ProductServiceTest {
 
         verify(productRepository, never())
                 .save(any(Product.class));
+    }
+
+    @Test
+    void shouldListProducts() {
+
+        Product firstProduct =
+                new Product(
+                        UUID.randomUUID(),
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        Product secondProduct =
+                new Product(
+                        UUID.randomUUID(),
+                        "Seguro Auto",
+                        InsuranceCategory.AUTO,
+                        new BigDecimal("50.00"),
+                        new BigDecimal("55.25")
+                );
+
+        when(
+                productRepository.findAll()
+        ).thenReturn(
+                List.of(
+                        firstProduct,
+                        secondProduct
+                )
+        );
+
+        List<Product> result =
+                productService.listProducts();
+
+        assertEquals(
+                2,
+                result.size()
+        );
+
+        assertEquals(
+                "Seguro de Vida",
+                result.get(0).name()
+        );
+
+        assertEquals(
+                "Seguro Auto",
+                result.get(1).name()
+        );
+
+        verify(productRepository)
+                .findAll();
+
+        verifyNoInteractions(
+                insurancePricingService
+        );
     }
 }

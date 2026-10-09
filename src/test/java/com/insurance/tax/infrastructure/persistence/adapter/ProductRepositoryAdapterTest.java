@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
@@ -137,5 +138,57 @@ class ProductRepositoryAdapterTest {
 
         verify(jpaRepository)
                 .findById(id);
+    }
+
+    @Test
+    void shouldFindAllProducts() {
+
+        ProductEntity firstEntity =
+                new ProductEntity(
+                        UUID.randomUUID(),
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        ProductEntity secondEntity =
+                new ProductEntity(
+                        UUID.randomUUID(),
+                        "Seguro Auto",
+                        InsuranceCategory.AUTO,
+                        new BigDecimal("50.00"),
+                        new BigDecimal("55.25")
+                );
+
+        when(
+                jpaRepository.findAll()
+        ).thenReturn(
+                List.of(
+                        firstEntity,
+                        secondEntity
+                )
+        );
+
+        List<Product> result =
+                adapter.findAll();
+
+        assertEquals(
+                2,
+                result.size()
+        );
+
+        assertEquals(
+                "Seguro de Vida",
+                result.get(0).name()
+        );
+
+        assertEquals(
+                "Seguro Auto",
+                result.get(1).name()
+        );
+
+        verify(jpaRepository)
+                .findAll();
     }
 }

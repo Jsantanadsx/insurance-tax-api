@@ -10,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -233,5 +235,71 @@ class ProductControllerTest {
                 );
 
         verifyNoInteractions(productService);
+    }
+
+    @Test
+    void shouldListProducts()
+            throws Exception {
+
+        Product firstProduct =
+                new Product(
+                        UUID.randomUUID(),
+                        "Seguro de Vida",
+                        InsuranceCategory.VIDA,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("103.20")
+                );
+
+        Product secondProduct =
+                new Product(
+                        UUID.randomUUID(),
+                        "Seguro Auto",
+                        InsuranceCategory.AUTO,
+                        new BigDecimal("50.00"),
+                        new BigDecimal("55.25")
+                );
+
+        when(
+                productService.listProducts()
+        ).thenReturn(
+                List.of(
+                        firstProduct,
+                        secondProduct
+                )
+        );
+
+        mockMvc.perform(
+                        get("/api/produtos")
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.length()")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[0].nome")
+                                .value("Seguro de Vida")
+                )
+                .andExpect(
+                        jsonPath("$[0].categoria")
+                                .value("VIDA")
+                )
+                .andExpect(
+                        jsonPath("$[0].preco_base")
+                                .value(100.00)
+                )
+                .andExpect(
+                        jsonPath("$[0].preco_tarifado")
+                                .value(103.20)
+                )
+                .andExpect(
+                        jsonPath("$[1].nome")
+                                .value("Seguro Auto")
+                );
+
+        verify(productService)
+                .listProducts();
     }
 }

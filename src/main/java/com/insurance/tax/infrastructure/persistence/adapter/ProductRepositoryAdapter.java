@@ -8,17 +8,10 @@ import com.insurance.tax.infrastructure.persistence.repository.InsuranceProductJ
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementa o acesso aos produtos utilizando
- * Spring Data JPA.
- *
- * <p>A aplicacao trabalha apenas com Product,
- * enquanto os detalhes de persistencia ficam
- * isolados nesta camada.</p>
- */
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryAdapter
@@ -44,5 +37,15 @@ public class ProductRepositoryAdapter
         return jpaRepository
                 .findById(id)
                 .map(ProductMapper::toDomain);
+    }
+
+    @Override
+    public List<Product> findAll() {
+
+        return jpaRepository
+                .findAll()
+                .stream()
+                .map(ProductMapper::toDomain)
+                .toList();
     }
 }

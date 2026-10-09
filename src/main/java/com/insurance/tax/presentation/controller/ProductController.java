@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -49,5 +50,15 @@ public class ProductController {
                 );
 
         return ProductResponse.from(product);
+    }
+
+    @GetMapping
+    public List<ProductResponse> listarProdutos() {
+
+        return productService
+                .listProducts()
+                .stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 }
