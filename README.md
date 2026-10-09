@@ -558,9 +558,9 @@ A evolução do schema fica sob responsabilidade do Flyway.
 
 # Observabilidade
 
-Spring Boot Actuator está habilitado.
+A aplicação utiliza Spring Boot Actuator e Micrometer Tracing.
 
-Endpoints expostos:
+Endpoints do Actuator expostos:
 
 ```text
 health
@@ -574,7 +574,37 @@ Exemplo:
 http://localhost:8080/actuator/health
 ```
 
-Nesta etapa, a solução já expõe métricas e informações de saúde por meio do Actuator. Logs de negócio e tracing distribuído são considerados evoluções adicionais de observabilidade.
+## Logs de negócio
+
+A aplicação registra eventos relevantes do fluxo de produtos, incluindo:
+
+- início da criação de produto;
+- criação concluída;
+- início da atualização;
+- atualização concluída;
+- tentativa de atualização de produto inexistente.
+
+Detalhes internos do cálculo podem ser registrados em nível `DEBUG`.
+
+## Tracing e correlação
+
+A aplicação utiliza Micrometer Tracing com Brave.
+
+Cada requisição HTTP possui identificadores de correlação adicionados aos logs:
+
+```text
+[application,traceId,spanId]
+```
+
+Exemplo:
+
+```text
+[insurance-tax-api,6ac8a6f3217836f4e21b6db863ba8355,e21b6db863ba8355]
+```
+
+Dessa forma, diferentes mensagens geradas durante a mesma requisição podem ser correlacionadas pelo `traceId`.
+
+Para facilitar a demonstração local, a aplicação utiliza sampling de 100% dos traces.
 
 ---
 
@@ -805,6 +835,8 @@ Atualmente a aplicação possui:
 [OK] HTTP 400 para dados inválidos
 [OK] HTTP 404 para produto inexistente
 [OK] Actuator
+[OK] Logs de negócio
+[OK] Tracing com Trace ID e Span ID
 [OK] OpenAPI
 [OK] Swagger UI
 [OK] Testes unitários
@@ -820,7 +852,6 @@ Como evolução da solução, podem ser adicionados:
 
 - interface web para utilização da API;
 - gerenciamento administrativo de novas taxas;
-- logs de negócio e tracing distribuído;
 - autenticação e autorização;
 - banco de dados externo para ambientes de produção;
 - containerização;
